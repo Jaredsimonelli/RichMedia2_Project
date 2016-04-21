@@ -1,0 +1,10 @@
+extends ./base.jade
+block append style
+  link(rel="stylesheet", type="text/css", href="/assets/gameStyle.css")
+block body
+  h1#title(align='center') Geo Wars
+  canvas#canvas(height='500', width='500', style='border:1px solid black') Please use an HTML 5 browser
+  #score(height='100', width='500')
+block scripts
+  script(src='/socket.io/socket.io.js')
+  script(src='/assets/game.js')
