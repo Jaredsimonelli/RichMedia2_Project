@@ -15,18 +15,17 @@ var DomoSchema = new mongoose.Schema({
 		set: setName
 	},
 	
-	level: {
-		type: Number,
-		required:true,
-		min: 0
-	},
-	
 	color: {
 		type: String,
 		trim: true,
 		required: true
 	},
 	
+	level: {
+		type: Number,
+		required:true,
+		min: 0
+	},
 	owner: {
 		type: mongoose.Schema.ObjectId,
 		required: true,

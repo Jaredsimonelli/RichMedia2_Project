@@ -11,8 +11,6 @@ block body
 			input#characterName(type="text", name="name", placeholder="Name")
 			label(for="color") Color: 
 			input#characterColor(type="text", name="color", placeholder="Color")
-			label(for="level") Level: 
-			input#characterLevel(type="text", name="level", placeholder="Level")
 			input(type="hidden", name="_csrf", value="#{csrfToken}")
 	div#characterButton
 		a#makeCharacterSubmit(class="makeCharacterSubmit", href="#") Make Character
@@ -28,7 +26,7 @@ block body
 				div.character
 					h3.characterName Name: #{val.name}
 					h3.characterColor Color: #{val.color}
-					h3.characterLevel Level: #{val.level}
+					h3.characterColor Level: #{val.level}
 					a#viewCharacter(class="viewCharacter", href="/domoPage", value=val) View Character
 	#characterMessage
 		img#speech(src="/assets/img/speech.png", alt="speech box")

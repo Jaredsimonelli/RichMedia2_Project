@@ -58,17 +58,14 @@ var gamePage = function(req, res){
 
 var makeDomo = function(req, res){
 	
-	if(!req.body.name || !req.body.color || !req.body.level){
-		return res.status(400).json({error: "Name, Color, and Level are required"});
-	}
-	if(req.body.level <= 0){
-		return res.status(400).json({error: "Level needs to be higher than 0"});
+	if(!req.body.name || !req.body.color){
+		return res.status(400).json({error: "Name and Color are required"});
 	}
 	
 	var domoData = {
 		name: req.body.name,
 		color: req.body.color,
-		level: req.body.level,
+		level: 0,
 		owner: req.session.account._id
 	};
 	
@@ -79,7 +76,7 @@ var makeDomo = function(req, res){
 			console.log(err);
 			return res.status(400).json({error: 'An error occurred'});
 		}
-		
+
 		res.json({redirect: "/maker"});
 	});
 	

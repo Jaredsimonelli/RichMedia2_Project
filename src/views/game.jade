@@ -2,6 +2,11 @@ extends ./base.jade
 block append style
   link(rel="stylesheet", type="text/css", href="/assets/gameStyle.css")
 block body
+  section#characters
+    each val in characters
+      h3#characterName #{val.name}
+      h3#characterColor #{val.color}
+      h3#characterLevel #{val.level}
   h1#title(align='center') Geo Wars
   canvas#canvas(height='500', width='500', style='border:1px solid black') Please use an HTML 5 browser
   #score(height='100', width='500')

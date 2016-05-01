@@ -11,6 +11,9 @@ var gameScreen = false;
 
 //User data
 var user = 'user' + (Math.floor((Math.random()*1000)) + 1);
+var userName;
+var userLevel;
+var prevPoints;
 var draws = {};
 var collectables = {};
 
@@ -31,8 +34,6 @@ function redraw() {
 		//Draw Collectables
 		var dColl = collectables[ cKeys[i] ];
 		
-		//console.log(collectables);
-		
 		//Collectable color
 		ctx.strokeStyle = 'green';
 		
@@ -51,7 +52,7 @@ function redraw() {
 		ctx.font = "10px Verdana";
 		ctx.fillStyle = drawCall.color;
 		ctx.lineWidth = 3;
-		ctx.fillText(drawCall.name + ": " + drawCall.type, drawCall.x - 15, drawCall.y - 10);
+		ctx.fillText(drawCall.name + "   " + drawCall.level, drawCall.x, drawCall.y - 10);
 		//Player
 		ctx.fillRect(drawCall.x, drawCall.y, drawCall.width, drawCall.height);
 		
@@ -59,47 +60,19 @@ function redraw() {
 		ctx.font = "15px Verdana";
 		ctx.fillText(drawCall.name + ": " + drawCall.points, 5, 25 + (i * 25)); 
 		//console.log(drawCall.name + ':  ' + drawCall.points);
-	}			
-	
+	}	
 }
 
-//Draws main screen
-function drawMainMenu(){
-	//Clear canvas
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
+//Draw level progress bar (LPB)
+function drawLPB(width){
 	
-	//Put title on screen
-	//Create gradient
-	var gradient=ctx.createLinearGradient(110,0,100,100);
-	gradient.addColorStop("0","magenta");
-	gradient.addColorStop("0.5","blue");
-	gradient.addColorStop("1.0","red");
-	
-	//Fill text with gradint
-	ctx.fillStyle = gradient;
-	ctx.font = "50px Lucida Console";
-	ctx.fillText("Geo Wars", 125 , 50);
-	
-	ctx.fillStyle = 'red';
-	ctx.font = "25px Lucida Console";
-	ctx.fillText("PRESS ENTER TO CONTINUE", 75 , 80);
-	
-	var playerBoxY = 100;
-	
-	ctx.strokeStyle = "black";
-	ctx.lineWidth = 3;
-	ctx.strokeRect(50, playerBoxY, 400, 50);
-	ctx.strokeRect(50, playerBoxY + 75, 400, 50);
-	ctx.strokeRect(50, playerBoxY + 150, 400, 50);
-	ctx.strokeRect(50, playerBoxY + 225, 400, 50);
-	ctx.strokeRect(50, playerBoxY + 300, 400, 50);	
+	ctx.fillStyle = '#ffcc00';
+	ctx.fillRect(0, 485, width, 15);	
 }
-
 
 function init() {
 	canvas = document.querySelector("#canvas");
 	ctx = canvas.getContext("2d");
-	
 	
 	//Movement variables
 	speed = 2.5;
@@ -122,18 +95,27 @@ function init() {
 		
 		//Update draws array
 		var time = new Date().getTime();
-		draws[user].lastUpdate = time;
-		draws[user].x = x;
-		draws[user].y = y;
+		draws[userName].lastUpdate = time;
+		draws[userName].x = x;
+		draws[userName].y = y;
 		
 		//Emit
-		socket.emit('mover', { name: user, playInfo: draws[user]});
-		socket.emit('checkCollisions', draws[user]);
+		socket.emit('mover', { name: userName, playInfo: draws[userName]});
+		socket.emit('checkCollisions', draws[userName]);
 	}
 	
 	function setUp(){
 		var time = new Date().getTime();
-		draws[user] = {lastUpdate: time, x: x, y: y, width: 50, height: 50, color: "black", name: user, type: "warrior", points: 0};
+		
+		//Get character data
+		var charDataName = document.getElementById('characterName');
+		var charDataLevel = document.getElementById('characterLevel');
+		
+		userName = charDataName.innerText;
+		userLevel = parseInt(charDataLevel.innerText);
+		prevPoints = 0;
+		
+		draws[userName] = {lastUpdate: time, x: x, y: y, width: 50, height: 50, color: "black", name: userName, level: userLevel, points: 0, collision: false};
 	}
 	
 	//HandleMessage function
@@ -142,13 +124,15 @@ function init() {
 		//If draws at index data.name is null add data, else update data
 		if( !draws[data.playInfo.name] )
 		{
-			draws[data.playInfo.name] = {lastUpdate: data.playInfo.lastUpdate, x: data.playInfo.x, y: data.playInfo.y, width: 50, height: 50, color: "red", name: data.playInfo.name, type: data.playInfo.type, points: 0};
+			draws[data.playInfo.name] = {lastUpdate: data.playInfo.lastUpdate, x: data.playInfo.x, y: data.playInfo.y, width: 50, height: 50, color: "red", name: data.playInfo.name, level: data.playInfo.level, points: 0, collision: false};
 		}
 		else
 		{
 			draws[data.playInfo.name].x = data.playInfo.x;
 			draws[data.playInfo.name].y = data.playInfo.y;
 			draws[data.playInfo.name].points = data.playInfo.points;
+			draws[data.playInfo.name].level = data.playInfo.level;
+			
 		}
 
 		redraw();
@@ -161,7 +145,18 @@ function init() {
 	
 	function handleCollision(data){
 		collectables = data.collInfo;	
+		//console.log(data);
+		
+		draws[data.playInfo.name].level = data.playInfo.level;
 		draws[data.playInfo.name].points = data.playInfo.points;
+		draws[data.playInfo.name].collision = data.playInfo.collision;
+
+		drawLPB(data.LPBInfo);
+		
+		//If there was a collision update progress bar
+		/*if(draws[data.playInfo.name].collision){	
+			drawLPB(draws[data.playInfo.name].level, draws[data.playInfo.name].points, data.playInfo.name);
+		}*/
 	}
 	
 	//Checks for key down input
