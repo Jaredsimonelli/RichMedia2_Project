@@ -1,11 +1,10 @@
 var io;
-var character = {lastUpdate: new Date().getTime(),x: 0,y: 0,points: 0,level: 0, collision: false};
+var character = {lastUpdate: new Date().getTime(),x: 0,y: 0,points: 0,level: 0, collision: false, prevLvlExp: 0};
 var collectables = {};
-var width = 0;
 var nLevel;
 var nextLevelExp;
-var count = 0;
-var prevLevelExp = 0;
+//var count = 0;
+//var width = 0;
 /*var clients       = {};
 var clientCounter = 0; // Increases per client connection*/
 
@@ -18,9 +17,9 @@ var configureSockets = function (socketio) {
 		//MOVER
 		//Get character data and move them
 		socket.on('mover', function(data){
+			character.name = data.name;
 			character.x = data.playInfo.x;
 			character.y = data.playInfo.y;
-			character.name = data.name;
 			character.level = data.playInfo.level;
 			character.points = data.playInfo.points;
 			
@@ -51,7 +50,7 @@ var configureSockets = function (socketio) {
 				
 				if(x < data.x + data.width && x + 10 > data.x && y < data.y + data.height && y + 10 > data.y){
 					data.points++;
-					count++;
+					//count++;
 					character.points = data.points;
 					//character.collision = true;
 					collectables[i] = {x: Math.floor((Math.random()*450)) + 1, y: Math.floor((Math.random()*450)) + 1};
@@ -62,19 +61,20 @@ var configureSockets = function (socketio) {
 			nLevel = data.level + 1;
 			nextLevelExp = (25 * nLevel * (1 + nLevel)) / 10;
 			
-
-			width = (500 / nextLevelExp) * (count);
+			//var count = data.points - prevLevelExp;
+			var width = (500 / nextLevelExp) * (data.points - data.prevLvlExp);
+			console.log(data.prevLvlExp);
 			
-			
-			if(data.points >= (nextLevelExp + prevLevelExp)){
-				prevLevelExp = nextLevelExp;
-				count = 0;
+			if(data.points >= nextLevelExp){
+				data.prevLvlExp = nextLevelExp;
+				character.prevLvlExp = data.prevLvlExp;
+				//count = 0;
 				data.level++;
 				character.level = data.level;
-				width = 0;
+				//width = 0;
 			}
 			
-			socket.emit('collisionDetect', {playInfo: character, collInfo: collectables, LPBInfo: width});
+			socket.emit('collisionDetect', {playInfo: character, collInfo: collectables, barWidth: width});
 			socket.broadcast.to('room1').emit('collisionDetect', {playInfo: character, collInfo: collectables}); 
 		});
 		

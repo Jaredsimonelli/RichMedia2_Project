@@ -67,7 +67,7 @@ function redraw() {
 function drawLPB(width){
 	
 	ctx.fillStyle = '#ffcc00';
-	ctx.fillRect(0, 485, width, 15);	
+	ctx.fillRect(0, 385, width, 15);	
 }
 
 function init() {
@@ -115,24 +115,27 @@ function init() {
 		userLevel = parseInt(charDataLevel.innerText);
 		prevPoints = 0;
 		
-		draws[userName] = {lastUpdate: time, x: x, y: y, width: 50, height: 50, color: "black", name: userName, level: userLevel, points: 0, collision: false};
+		draws[userName] = {lastUpdate: time, x: x, y: y, width: 50, height: 50, color: "black", name: userName, level: userLevel, points: 0, collision: false, prevLvlExp: 0, progWidth: 0};
 	}
 	
 	//HandleMessage function
 	function handleMessage(data)
 	{	
+		//Saving the player data info in a variable to neaten up code
+		var p = data.playInfo;
+		
 		//If draws at index data.name is null add data, else update data
-		if( !draws[data.playInfo.name] )
+		if( !draws[p.name] )
 		{
-			draws[data.playInfo.name] = {lastUpdate: data.playInfo.lastUpdate, x: data.playInfo.x, y: data.playInfo.y, width: 50, height: 50, color: "red", name: data.playInfo.name, level: data.playInfo.level, points: 0, collision: false};
+			draws[p.name] = {lastUpdate: p.lastUpdate, x: p.x, y: p.y, width: 50, height: 50, color: "red", name: p.name, level: p.level, points: 0, collision: false, prevLvlExp: 0, progWidth: 0};
 		}
 		else
 		{
-			draws[data.playInfo.name].x = data.playInfo.x;
-			draws[data.playInfo.name].y = data.playInfo.y;
-			draws[data.playInfo.name].points = data.playInfo.points;
-			draws[data.playInfo.name].level = data.playInfo.level;
-			
+			draws[p.name].x = p.x;
+			draws[p.name].y = p.y;
+			draws[p.name].points = p.points;
+			draws[p.name].level = p.level;
+			//draws[p.name].prevLvlExp = p.prevLvlExp;
 		}
 
 		redraw();
@@ -144,18 +147,23 @@ function init() {
 	}
 	
 	function handleCollision(data){
+		//Saving the player data info in a variable to neaten up code
+		var p = data.playInfo;
 		collectables = data.collInfo;	
-		//console.log(data);
 		
-		draws[data.playInfo.name].level = data.playInfo.level;
-		draws[data.playInfo.name].points = data.playInfo.points;
-		draws[data.playInfo.name].collision = data.playInfo.collision;
-
-		drawLPB(data.LPBInfo);
+		//Save level,points,previousLevelExp, and Porgress bar width info
+		draws[p.name].level = p.level;
+		draws[p.name].points = p.points;
+		draws[p.name].prevLvlExp = p.prevLvlExp;
+		draws[p.name].progWidth = data.barWidth;
+		
+		//draws[p.name].LPBWidth = p.LPBWidth;
+		//draws[p.name].collision = p.collision;
+		drawLPB(draws[p.name].progWidth);
 		
 		//If there was a collision update progress bar
-		/*if(draws[data.playInfo.name].collision){	
-			drawLPB(draws[data.playInfo.name].level, draws[data.playInfo.name].points, data.playInfo.name);
+		/*if(draws[p.name].collision){	
+			drawLPB(draws[p.name].level, draws[p.name].points, p.name);
 		}*/
 	}
 	
