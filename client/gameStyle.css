@@ -17,3 +17,11 @@ h1{
 #characters {
 	display: none;
 }
+
+#progressBar {
+	background-color: yellow;
+	padding: 0;
+	margin: auto;
+	display: block;
+	height: 20px;
+}

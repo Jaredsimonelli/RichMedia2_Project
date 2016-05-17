@@ -45,12 +45,14 @@ var gamePage = function(req, res){
 			return res.status(400).json({error: 'An error occurred'});
 		}
 		
-		var domoData = {
+		/*var domoData = {
 			name: req.body.name,
 			color: req.body.color,
 			level: req.body.level,
 			owner: req.session.account._id
-		};
+		};*/
+		
+		//console.log(docs[0].level);
 		
 		res.render('game', {csrfToken: req.csrfToken(), characters: docs});
 	});

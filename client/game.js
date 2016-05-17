@@ -1,4 +1,3 @@
-
 "use strict";
 
 var canvas;
@@ -13,8 +12,10 @@ var gameScreen = false;
 var user = 'user' + (Math.floor((Math.random()*1000)) + 1);
 var userName;
 var userLevel;
+var userColor;
 var prevPoints;
 var draws = {};
+//var userData = {};
 var collectables = {};
 
 //our websocket connection
@@ -50,11 +51,12 @@ function redraw() {
 		
 		//Text color
 		ctx.font = "10px Verdana";
+		//ctx.fillStyle = drawCall.color;
 		ctx.fillStyle = drawCall.color;
 		ctx.lineWidth = 3;
 		ctx.fillText(drawCall.name + "   " + drawCall.level, drawCall.x, drawCall.y - 10);
 		//Player
-		ctx.fillRect(drawCall.x, drawCall.y, drawCall.width, drawCall.height);
+		ctx.fillRect(drawCall.x, drawCall.y, 50, 50);
 		
 		//Print Score
 		ctx.font = "15px Verdana";
@@ -65,9 +67,10 @@ function redraw() {
 
 //Draw level progress bar (LPB)
 function drawLPB(width){
-	
-	ctx.fillStyle = '#ffcc00';
-	ctx.fillRect(0, 385, width, 15);	
+	console.log(width);
+	document.getElementById('progressBar').style.width = width;
+	/*ctx.fillStyle = '#ffcc00';
+	ctx.fillRect(0, 385, width, 15);*/
 }
 
 function init() {
@@ -110,16 +113,18 @@ function init() {
 		//Get character data
 		var charDataName = document.getElementById('characterName');
 		var charDataLevel = document.getElementById('characterLevel');
+		var charDataColor = document.getElementById('characterColor');
 		
 		userName = charDataName.innerText;
 		userLevel = parseInt(charDataLevel.innerText);
+		userColor = charDataColor.innerText;
 		prevPoints = 0;
 		
-		draws[userName] = {lastUpdate: time, x: x, y: y, width: 50, height: 50, color: "black", name: userName, level: userLevel, points: 0, collision: false, prevLvlExp: 0, progWidth: 0};
+		draws[userName] = {lastUpdate: time, x: x, y: y, w: 50, h: 50, color: userColor, name: userName, level: userLevel, points: 0, collision: false, prevLvlExp: 0, progWidth: 0};
 	}
 	
 	//HandleMessage function
-	function handleMessage(data)
+	function handleMovement(data)
 	{	
 		//Saving the player data info in a variable to neaten up code
 		var p = data.playInfo;
@@ -127,7 +132,7 @@ function init() {
 		//If draws at index data.name is null add data, else update data
 		if( !draws[p.name] )
 		{
-			draws[p.name] = {lastUpdate: p.lastUpdate, x: p.x, y: p.y, width: 50, height: 50, color: "red", name: p.name, level: p.level, points: 0, collision: false, prevLvlExp: 0, progWidth: 0};
+			draws[p.name] = {lastUpdate: p.lastUpdate, x: p.x, y: p.y, w: 50, h: 50, color: p.color, name: p.name, level: p.level, points: 0, collision: false, prevLvlExp: 0, progWidth: 0};
 		}
 		else
 		{
@@ -137,7 +142,9 @@ function init() {
 			draws[p.name].level = p.level;
 			//draws[p.name].prevLvlExp = p.prevLvlExp;
 		}
-
+		//userData = data.playInfo;
+		
+		
 		redraw();
 	}
 	
@@ -146,6 +153,7 @@ function init() {
 		collectables = data.collInfo;			
 	}
 	
+	//Handle collision and update progress bar
 	function handleCollision(data){
 		//Saving the player data info in a variable to neaten up code
 		var p = data.playInfo;
@@ -157,14 +165,8 @@ function init() {
 		draws[p.name].prevLvlExp = p.prevLvlExp;
 		draws[p.name].progWidth = data.barWidth;
 		
-		//draws[p.name].LPBWidth = p.LPBWidth;
-		//draws[p.name].collision = p.collision;
 		drawLPB(draws[p.name].progWidth);
-		
-		//If there was a collision update progress bar
-		/*if(draws[p.name].collision){	
-			drawLPB(draws[p.name].level, draws[p.name].points, p.name);
-		}*/
+		document.getElementById('characterLevel').innerText = draws[p.name].level.toString();
 	}
 	
 	//Checks for key down input
@@ -197,12 +199,6 @@ function init() {
 		
 		moveCalls();
 	});
-	
-	//Checks for closed window
-	document.addEventListener('onunload', function(event) {
-		socket.emit('disconnect');
-	});
-
 
 	//Connect to our server (io added automatically by socket.io when embedding it in the HTTP app on the server side)
 	//This will return a new websocket connection. Every call to io.connect will return a new websocket connection 
@@ -218,18 +214,7 @@ function init() {
 		//Setup the first time user connects, also draw
 		setUp();
 		
-		//Start Screen code
-		/*if(gameScreen ==  false)
-		{
-			drawMainMenu();
-			socket.emit('setUp');
-		}
-		else
-		{	
-			redraw();
-		}*/
-		
-		socket.emit('setUp');
+		socket.emit('setUp', draws[userName]);
 		redraw();
 		
 		//Emit (Commented out for main menu test
@@ -237,29 +222,9 @@ function init() {
 	});      
 	
 	//When our socket receives 'moveCharacter' messages from the server, call our handleMessage function
-	socket.on('moveCharacter',handleMessage);
+	socket.on('moveCharacter',handleMovement);
 	socket.on('setUpCollectables', handleCollectables);
-	socket.on('collisionDetect', handleCollision);
-	
-	
-	//Get mouse position
-	/*canvas.addEventListener('click', function(evt) {
-		var mousePos = getMousePos(canvas, evt);
-		x = mousePos.x;
-		y = mousePos.y;
-		
-		setCalls();
-		
-	}, false);
-	
-	function getMousePos(canvas, evt) {
-		var rect = canvas.getBoundingClientRect();
-		return {
-		  x: evt.clientX - rect.left,
-		  y: evt.clientY - rect.top
-		};
-	}*/
-	
+	socket.on('collisionDetect', handleCollision);	
 }
 
 window.onload = init;

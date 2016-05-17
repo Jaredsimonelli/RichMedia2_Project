@@ -9,7 +9,7 @@ block body
       h3#characterLevel #{val.level}
   h1#title(align='center') Geo Wars
   canvas#canvas(height='400', width='500', style='border:1px solid black') Please use an HTML 5 browser
-  #score(height='100', width='500')
+  div#progressBar
 block scripts
   script(src='/socket.io/socket.io.js')
   script(src='/assets/game.js')
