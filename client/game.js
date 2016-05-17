@@ -67,10 +67,7 @@ function redraw() {
 
 //Draw level progress bar (LPB)
 function drawLPB(width){
-	console.log(width);
 	document.getElementById('progressBar').style.width = width;
-	/*ctx.fillStyle = '#ffcc00';
-	ctx.fillRect(0, 385, width, 15);*/
 }
 
 function init() {
@@ -142,9 +139,6 @@ function init() {
 			draws[p.name].level = p.level;
 			//draws[p.name].prevLvlExp = p.prevLvlExp;
 		}
-		//userData = data.playInfo;
-		
-		
 		redraw();
 	}
 	
@@ -214,11 +208,10 @@ function init() {
 		//Setup the first time user connects, also draw
 		setUp();
 		
+		document.getElementById('progressBar').style.width = 0;
+		
 		socket.emit('setUp', draws[userName]);
 		redraw();
-		
-		//Emit (Commented out for main menu test
-		//socket.emit('mover', { name: user, info: draws[user] });
 	});      
 	
 	//When our socket receives 'moveCharacter' messages from the server, call our handleMessage function
